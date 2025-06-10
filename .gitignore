@@ -1,0 +1,13 @@
+# locals
+/venv
+/logfile
+/indonesia_stocks
+/deployment_models
+
+catatan
+
+# pycaches
+/trainers/__pycache__
+/modelings/__pycache__
+/algorithms/__pycache__
+/preprocessings/__pycache__
