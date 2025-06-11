@@ -1,0 +1,32 @@
+name: Master Workflow Pipeline
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+
+jobs:
+  check_disk_system:
+    name: Check Disk System
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set Global Directory
+        run: git config --global --add safe.directory /github/workspace
+
+      - uses: actions/checkout@v3     
+        with:
+          lfs: true
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Check Disk System
+        run: df -h
+        
