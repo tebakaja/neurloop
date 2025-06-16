@@ -57,7 +57,9 @@ jobs:
 
       - name: Requirements Install
         id: requirements_install
-        run: pip install -r requirements/linux/ubuntu.production.txt
+        run: |
+          pip install -r requirements/linux/ubuntu.production.txt
+          pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu 
 
       - name: test workloads
         run: ls -al stock_models_10 $DATASET_NAME
