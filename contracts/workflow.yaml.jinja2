@@ -1,0 +1,63 @@
+name: {{ workflow_name }}
+
+on:
+  push:
+    branches:
+      - main
+    tags:
+      - '*'
+
+jobs:
+  training_workloads:
+    name: Training Workloads [ Stock Datas ]
+    runs-on: ubuntu-latest
+    environment: Production
+
+    strategy:
+      matrix:
+        python-version: [{{ python_version }}]
+
+    env:
+      # HF_TOKEN: {% raw %}${{ secrets.HF_TOKEN }}{% endraw %}
+      DATASET_NAME: indonesia_stocks
+      MODEL_REGISTRY_NAME: {{ registry_name }}
+      HF_USERNAME: qywok
+
+    steps:
+      - name: Set Global Directory
+        run: git config --global --add safe.directory /github/workspace
+
+      - uses: actions/checkout@v3     
+        with:
+          lfs: true
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: {% raw %}${{ matrix.python-version }}{% endraw %}
+
+      - name: Cloning Model from Hugging Face
+        id: cloning_model
+        run: |
+          git clone {{ registry_url }}
+
+      - name: Cloning Datasets From Hugging Face
+        id: cloning_dataset
+        run: git clone https://huggingface.co/datasets/$HF_USERNAME/$DATASET_NAME
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: {% raw %}${{ runner.os }}-pip-${{ hashFiles('requirements/linux/ubuntu.production.txt') }}{% endraw %}
+          restore-keys: |
+            {% raw %}${{ runner.os }}-pip-{% endraw %}
+
+      - name: Requirements Install
+        id: requirements_install
+        run: pip install -r requirements/linux/ubuntu.production.txt
+
+      - name: test workloads
+        run: ls -al {{ registry_name }} $DATASET_NAME

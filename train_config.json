@@ -1,0 +1,45 @@
+{
+   "model_registries": [
+      {
+         "registry_name": "stock_models_1",
+         "registry_url": "https://huggingface.co/qywok/stock_models_1"
+      },
+      {
+         "registry_name": "stock_models_2",
+         "registry_url": "https://huggingface.co/qywok/stock_models_2"
+      },
+      {
+         "registry_name": "stock_models_3",
+         "registry_url": "https://huggingface.co/qywok/stock_models_3"
+      },
+      {
+         "registry_name": "stock_models_4",
+         "registry_url": "https://huggingface.co/qywok/stock_models_4"
+      },
+      {
+         "registry_name": "stock_models_5",
+         "registry_url": "https://huggingface.co/qywok/stock_models_5"
+      },
+      {
+         "registry_name": "stock_models_6",
+         "registry_url": "https://huggingface.co/qywok/stock_models_6"
+      },
+      {
+         "registry_name": "stock_models_7",
+         "registry_url": "https://huggingface.co/qywok/stock_models_7"
+      },
+      {
+         "registry_name": "stock_models_8",
+         "registry_url": "https://huggingface.co/qywok/stock_models_8"
+      },
+      {
+         "registry_name": "stock_models_9",
+         "registry_url": "https://huggingface.co/qywok/stock_models_9"
+      },
+      {
+         "registry_name": "stock_models_10",
+         "registry_url": "https://huggingface.co/qywok/stock_models_10"
+      }
+   ],
+   "status": "TRAIN_OFF"
+}

@@ -1,11 +1,13 @@
 import time
-from typing import List
+import numpy as np
 import pandas as pd
 from tqdm import tqdm
+from typing import List
 
 import torch
 import torch.nn as nn
 from torch.utils.data import TensorDataset, DataLoader
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 from preprocessings import sliding, splitting
 from algorithms.optimizers import AdaptiveMomentEstimation
@@ -199,11 +201,9 @@ class ForecastingBiGRUTrainer:
         if counter >= self.patience:
           print(f"Early stopping at epoch {epoch+1}")
           break
-        print()
 
       duration: float = (time.time() - start) / 60
-      print(f"Training Time (Exponential): {duration:.2f} minutes")
-    print(f"Training Time (Final): {duration:.2f} minutes")
+      print(f'Training Time (Exponential): {duration:.2f} minutes\n')
 
 
   """
@@ -218,6 +218,31 @@ class ForecastingBiGRUTrainer:
     with torch.no_grad():
       preds: torch.Tensor = self.model(self.X_test)
       return self.criterion(preds, self.y_test).item()
+
+
+  def metrics_evaluation(self) -> None:
+    self.model.eval()
+    with torch.no_grad():
+        y_pred: torch.Tensor = self.model(self.X_test).cpu().numpy()[:, -1]
+
+    y_test: np.ndarray = np.array(self.y_test)
+    y_pred: np.ndarray = np.array(y_pred)
+
+    mae:  float = mean_absolute_error(y_test, y_pred)
+    rmse: float = np.sqrt(mean_squared_error(y_test, y_pred))
+    r2:   float = r2_score(y_test, y_pred)
+
+    epsilon: float = 1e-8
+    mape:    float = np.mean(
+      np.abs(
+        (y_test - y_pred) / (np.abs(y_test) + epsilon)
+      )
+    ) * 100
+
+    print(f'MAE  : {mae:.9f}')
+    print(f'MAPE : {mape:.9f}%')
+    print(f'RMSE : {rmse:.9f}')
+    print(f'R²   : {r2:.9f}')
 
 
   """
