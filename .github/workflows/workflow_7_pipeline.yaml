@@ -63,3 +63,6 @@ jobs:
 
       - name: test workloads
         run: ls -al stock_models_7 $DATASET_NAME
+
+      - name: test training
+        run: python autotraining.py --workloads_json=workloads_7.json

@@ -32,6 +32,8 @@ class AutogenWorkflows:
           'registry_name':  registry.get('registry_name'),
           'registry_url' :  registry.get('registry_url'),
 
+          'workloads_file':  f'workloads_{_idx + 1}.json',
+
           'python_version': '3.11',
           'script_name':    'main.py'
         }

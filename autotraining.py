@@ -40,12 +40,12 @@ def main() -> None:
       trainer: ForecastingBiGRUTrainer = \
         ForecastingBiGRUTrainer(
           csv_file        = workload,
-          sequence_length = 60,
-          # sequence_length = 14,
-          hidden_sizes    = [128, 64, 32],
-          # hidden_sizes    = [7],
-          epochs = 25,
-          # epochs = 3
+          #sequence_length = 60,
+          sequence_length = 14,
+          #hidden_sizes    = [128, 64, 32],
+          hidden_sizes    = [7],
+          # epochs = 25,
+          epochs = 3
         )
         
       trainer.train()
