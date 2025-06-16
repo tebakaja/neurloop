@@ -65,4 +65,9 @@ jobs:
         run: ls -al {{ registry_name }} $DATASET_NAME
 
       - name: test training
-        run: python autotraining.py --workloads_json={{ workloads_file }}
+        run: |
+          python autotraining.py \
+            --workloads_json={{ workloads_file }} \
+            --model_registry={{ registry_name }}
+
+      

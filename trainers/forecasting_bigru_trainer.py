@@ -32,7 +32,8 @@ filterwarnings("ignore")
 class ForecastingBiGRUTrainer:
   def __init__(
     self, 
-    csv_file:           str, 
+    csv_file:           str,
+    model_registry:     str,
     sequence_length:    int = 60, 
     hidden_sizes: List[int] = [128, 64],
     batch_size:         int = 20, 
@@ -42,6 +43,8 @@ class ForecastingBiGRUTrainer:
   ) -> None:
     self.torch_device:  torch.device = self.__get_torch_device()
     self.csv_file:               str = csv_file
+    self.model_registry:         str = model_registry
+
     self.sequence_length:        int = sequence_length
     self.hidden_sizes:     List[int] = hidden_sizes
     self.batch_size:             int = batch_size
@@ -257,7 +260,7 @@ class ForecastingBiGRUTrainer:
   """
   def export_to_onnx(self) -> None:
     stock_name:    str = self.csv_file
-    onnx_location: str = f'deployment_models/{stock_name[:len(stock_name) - 4]}.onnx'
+    onnx_location: str = f'{self.model_registry}/{stock_name[:len(stock_name) - 4]}.onnx'
     model: ForecastingBiGRUModel = ForecastingBiGRUModel(
       input_size          = self.X_train.shape[2],
       hidden_sizes        = self.hidden_sizes,

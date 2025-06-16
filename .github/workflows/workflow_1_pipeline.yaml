@@ -65,4 +65,9 @@ jobs:
         run: ls -al stock_models_1 $DATASET_NAME
 
       - name: test training
-        run: python autotraining.py --workloads_json=workloads_1.json
+        run: |
+          python autotraining.py \
+            --workloads_json=workloads_1.json \
+            --model_registry=stock_models_1
+
+      

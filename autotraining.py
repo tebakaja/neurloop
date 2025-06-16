@@ -27,6 +27,11 @@ def main() -> None:
       type = str, required = True, help = 'workloads'
     )
 
+    parser.add_argument(
+      '-r', '--model_registry',
+      type = str, required = True, help = 'workloads'
+    )
+
     arguments:    Namespace = parser.parse_args()
     workloads_location: str = f'indonesia_stocks/workloads/{arguments.workloads_json}'
 
@@ -40,6 +45,8 @@ def main() -> None:
       trainer: ForecastingBiGRUTrainer = \
         ForecastingBiGRUTrainer(
           csv_file        = workload,
+          model_registry  = arguments.model_registry,
+
           #sequence_length = 60,
           sequence_length = 14,
           #hidden_sizes    = [128, 64, 32],
