@@ -34,8 +34,7 @@ class AutogenWorkflows:
 
           'workloads_file':  f'workloads_{_idx + 1}.json',
 
-          'python_version': '3.11',
-          'script_name':    'main.py'
+          'python_version': '3.11'
         }
 
         template_render: str = template.render(template_context)

@@ -18,7 +18,7 @@ jobs:
         python-version: [3.11]
 
     env:
-      # HF_TOKEN: ${{ secrets.HF_TOKEN }}
+      HF_TOKEN: ${{ secrets.HF_TOKEN }}
       DATASET_NAME: indonesia_stocks
       MODEL_REGISTRY_NAME: stock_models_6
       HF_USERNAME: qywok
@@ -62,7 +62,7 @@ jobs:
           pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu 
 
       - name: test workloads
-        run: ls -al stock_models_6 $DATASET_NAME
+        run: ls -al $DATASET_NAME/workloads
 
       - name: test training
         run: |
@@ -70,4 +70,15 @@ jobs:
             --workloads_json=workloads_6.json \
             --model_registry=stock_models_6
 
-      
+      - name: test models registry
+        run: ls -al stock_models_6
+
+      - name: Ingest to Hugging Face Models
+        run: |
+          cd stock_models_6
+          git config --local user.email "alfariqyraihan@gmail.com"
+          git config --local user.name "qywok"
+          git add -A 
+          git diff-index --quiet HEAD || git commit -m "[ Ingest Model ]"
+          git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/$HF_USERNAME/$MODEL_REGISTRY_NAME main --force
+          cd .. && ls -al
