@@ -38,16 +38,43 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      - name: Get Current Date
+        id: get_current_date
+        run: |
+          full_date=$(date)
+          echo "FULL_DATE=${full_date}" >> $GITHUB_ENV
+
+          current_date=$(date +%d)
+          current_date=$((10#$current_date + 1))
+          echo "CURRENT_DATE=${current_date}" >> $GITHUB_ENV
+
+          full_current_date=$(date +'%Y-%m-%d')
+          echo "FULL_CURRENT_DATE=${full_current_date}" >> $GITHUB_ENV
+
+      - name: Read Date and Training Schedule
+        id: read_date_training_schedule
+        run: |
+          echo "DATE_SCHEDULE=$(cat schedules/date.schedule)" \
+            >> $GITHUB_ENV
+          echo "TRAINING_SCHEDULE=$(cat schedules/training.schedule)" \
+            >> $GITHUB_ENV
+
       - name: Cloning Model from Hugging Face
         id: cloning_model
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
+          echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"
           git clone https://huggingface.co/qywok/stock_models_3
 
       - name: Cloning Datasets From Hugging Face
         id: cloning_dataset
-        run: git clone https://huggingface.co/datasets/$HF_USERNAME/$DATASET_NAME
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"
+          git clone https://huggingface.co/datasets/$HF_USERNAME/$DATASET_NAME
 
       - name: Cache pip
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -57,28 +84,36 @@ jobs:
 
       - name: Requirements Install
         id: requirements_install
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
           pip install -r requirements/linux/ubuntu.production.txt
           pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu 
 
-      - name: test workloads
-        run: ls -al $DATASET_NAME/workloads
-
-      - name: test training
+      - name: Training Workloads
+        id: training_workloads
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
           python autotraining.py \
             --workloads_json=workloads_3.json \
             --model_registry=stock_models_3
 
-      - name: test models registry
-        run: ls -al stock_models_3
-
       - name: Ingest to Hugging Face Models
+        id: ingest_hf_model
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
           cd stock_models_3
           git config --local user.email "alfariqyraihan@gmail.com"
           git config --local user.name "qywok"
           git add -A 
-          git diff-index --quiet HEAD || git commit -m "[ Ingest Model ]"
+          git diff-index --quiet HEAD || git commit -m "[ Ingest Date ]: $FULL_DATE"
           git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/$HF_USERNAME/$MODEL_REGISTRY_NAME main --force
           cd .. && ls -al
+
+      - name: Remove Temporarary Files and Directories
+        id: remove_temporary
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          rm -rf stock_models_3
+          rm -rf $DATASET_NAME
+          ls -al
+    

@@ -27,14 +27,15 @@ class AutogenWorkflows:
           .get_template('workflow.yaml.jinja2')
 
         template_context: Dict[str, Any] = {
-          'workflow_name':  f'Automated Training [Workflow - {_idx + 1}]',
+          'workflow_name' :  f'Automated Training [Workflow - {_idx + 1}]',
 
-          'registry_name':  registry.get('registry_name'),
-          'registry_url' :  registry.get('registry_url'),
+          'registry_name' :  registry.get('registry_name'),
+          'registry_url'  :  registry.get('registry_url'),
 
           'workloads_file':  f'workloads_{_idx + 1}.json',
 
-          'python_version': '3.11'
+          'python_version':  '3.11',
+          'last_pipeline' :  True if len(model_registries) == (_idx + 1) else False
         }
 
         template_render: str = template.render(template_context)
