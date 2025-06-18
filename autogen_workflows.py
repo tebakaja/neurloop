@@ -5,6 +5,21 @@ from jinja2 import Template, Environment, FileSystemLoader
 from os import makedirs
 from os.path import exists as file_is_exists
 
+from warnings import filterwarnings
+filterwarnings("ignore")
+
+
+
+"""
+
+  -- Autogen Workflows -- 
+
+  Writer : Al-Fariqy Raihan Azhwar
+  NPM    : 202143501514
+  Class  : R8Q
+  Email  : alfariqyraihan@gmail.com
+
+"""
 
 
 class AutogenWorkflows:
@@ -41,6 +56,7 @@ class AutogenWorkflows:
         template_render: str = template.render(template_context)
         with open(f'{self.GITHUB_ACTIONS_PATH}/workflow_{_idx + 1}_pipeline.yaml', 'w') \
           as workflow_file: workflow_file.write(template_render)
+        print(f'[ Generate Success ]: workflow_{_idx + 1}_pipeline.yaml')
         
       print('generate workflow is success..')
 

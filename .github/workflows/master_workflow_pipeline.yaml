@@ -8,9 +8,14 @@ on:
       - '*'
 
 jobs:
-  check_disk_system:
-    name: Check Disk System
+  training_master:
+    name: Training Master
     runs-on: ubuntu-latest
+    environment: Training Master
+
+    strategy:
+      matrix:
+        python-version: [3.11]
 
     steps:
       - name: Set Global Directory
@@ -28,5 +33,61 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
       - name: Check Disk System
+        id: check_disk_system
         run: df -h
+
+      - name: Get Current Date
+        id: get_current_date
+        run: |
+          full_date=$(date)
+          echo "FULL_DATE=${full_date}" >> $GITHUB_ENV
+
+          current_date=$(date +%d)
+          current_date=$((10#$current_date + 1))
+          echo "CURRENT_DATE=${current_date}" >> $GITHUB_ENV
+
+          full_current_date=$(date +'%Y-%m-%d')
+          echo "FULL_CURRENT_DATE=${full_current_date}" >> $GITHUB_ENV
+
+      - name: Read Date and Training Schedule
+        id: read_date_training_schedule
+        run: |
+          echo "DATE_SCHEDULE=$(cat schedules/date.schedule)" \
+            >> $GITHUB_ENV
+          echo "TRAINING_SCHEDULE=$(cat schedules/training.schedule)" \
+            >> $GITHUB_ENV
+
+      - name: Cache pip
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('requirements/linux/master/ubuntu.production.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Requirements Install
+        id: requirements_install
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"
+          pip install -r requirements/linux/master/ubuntu.production.txt
+      
+      - name: Generate Workflows
+        id: generate_workflows
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"
+          python autogen_workflows.py
+          ls -al .github/workflows
+
+      - name: Change Date Schedule
+        id: change_date_schedule
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"
+          echo "$(date +'%Y-%m-%d')" > schedules/date.schedule
+          cat schedules/date.schedule
+      
+
         

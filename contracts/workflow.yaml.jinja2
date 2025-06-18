@@ -3,15 +3,17 @@ name: {{ workflow_name }}
 on:
   push:
     branches:
-      - main
+      - testing
     tags:
       - '*'
 
 jobs:
   training_workloads:
-    name: Training Workloads [ Stock Datas ]
+    name: Training Workloads
     runs-on: ubuntu-latest
-    environment: Production
+  {% if last_pipeline %}
+    environment: Training Workloads
+  {% endif %}
 
     strategy:
       matrix:
@@ -37,6 +39,10 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: {% raw %}${{ matrix.python-version }}{% endraw %}
+
+      - name: Check Disk System
+        id: check_disk_system
+        run: df -h
 
       - name: Get Current Date
         id: get_current_date
@@ -78,7 +84,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
-          key: {% raw %}${{ runner.os }}-pip-${{ hashFiles('requirements/linux/ubuntu.production.txt') }}{% endraw %}
+          key: {% raw %}${{ runner.os }}-pip-${{ hashFiles('requirements/linux/workload/ubuntu.production.txt') }}{% endraw %}
           restore-keys: |
             {% raw %}${{ runner.os }}-pip-{% endraw %}
 
@@ -86,13 +92,15 @@ jobs:
         id: requirements_install
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
-          pip install -r requirements/linux/ubuntu.production.txt
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
+          pip install -r requirements/linux/workload/ubuntu.production.txt
           pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cpu 
 
       - name: Training Workloads
         id: training_workloads
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
           python autotraining.py \
             --workloads_json={{ workloads_file }} \
             --model_registry={{ registry_name }}
@@ -101,11 +109,12 @@ jobs:
         id: ingest_hf_model
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
           cd {{ registry_name }}
           git config --local user.email "alfariqyraihan@gmail.com"
           git config --local user.name "qywok"
           git add -A 
-          git diff-index --quiet HEAD || git commit -m "[ Ingest Date ]: $FULL_DATE"
+          git diff-index --quiet HEAD || git commit -m "[ Ingest Date (GMT +0) ]: $FULL_DATE"
           git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/$HF_USERNAME/$MODEL_REGISTRY_NAME main --force
           cd .. && ls -al
 
@@ -113,23 +122,36 @@ jobs:
         id: remove_temporary
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
           rm -rf {{ registry_name }}
           rm -rf $DATASET_NAME
           ls -al
-    {# {% if last_pipeline %}
+          rm .github/workflows/workflow_*_pipeline.yaml
+          ls -al .github/workflows
+    {% if last_pipeline %}
+      - name: Change Training Schedule
+        id: change_training_schedule
+        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
+          echo "TRAIN_OFF" > schedules/training.schedule
+          cat schedules/training.schedule
+
       - name: Commit Changes
         id: commit_changes
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
           git config --local user.email "belajarqywok@gmail.com"
           git config --local user.name "belajarqywok"
           git add -A
-          git commit -m "[ GA UPDATE ]: $FULL_DATE"
+          git commit -m "[ GITHUB ACTION UPDATE (GMT +0) ]: $FULL_DATE"
 
       - name: Push Changes
+        id: push_changes
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         uses: ad-m/github-push-action@master
         with:
           github_token: {% raw %}${{ secrets.GH_TOKEN }}{% endraw %}
           branch: main 
-    {% endif %} #}
+    {% endif %}
