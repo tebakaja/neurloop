@@ -3,7 +3,7 @@ name: {{ workflow_name }}
 on:
   push:
     branches:
-      - testing
+      - main
     tags:
       - '*'
 
@@ -117,7 +117,7 @@ jobs:
           git diff-index --quiet HEAD || git commit -m "[ Ingest Date (GMT +0) ]: $FULL_DATE"
           git push https://$HF_USERNAME:$HF_TOKEN@huggingface.co/$HF_USERNAME/$MODEL_REGISTRY_NAME main --force
           cd .. && ls -al
-
+    {% if last_pipeline %}
       - name: Remove Temporarary Files and Directories
         id: remove_temporary
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
@@ -128,7 +128,7 @@ jobs:
           ls -al
           rm .github/workflows/workflow_*_pipeline.yaml
           ls -al .github/workflows
-    {% if last_pipeline %}
+
       - name: Change Training Schedule
         id: change_training_schedule
         if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'

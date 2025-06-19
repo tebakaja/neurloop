@@ -58,7 +58,7 @@ jobs:
             >> $GITHUB_ENV
 
       - name: Cache pip
-        if: env.DATE_SCHEDULE == env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         uses: actions/cache@v4
         with:
           path: ~/.cache/pip
@@ -89,5 +89,22 @@ jobs:
           echo "$(date +'%Y-%m-%d')" > schedules/date.schedule
           cat schedules/date.schedule
       
+      - name: Commit Changes
+        id: commit_changes
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        run: |
+          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
+          git config --local user.email "belajarqywok@gmail.com"
+          git config --local user.name "belajarqywok"
+          git add -A
+          git commit -m "[ GITHUB ACTION UPDATE (GMT +0) ]: $FULL_DATE"
+        
+      - name: Push Changes
+        id: push_changes
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GH_TOKEN }}
+          branch: main
 
         
