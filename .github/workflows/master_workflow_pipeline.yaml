@@ -93,7 +93,7 @@ jobs:
         id: commit_changes
         if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
         run: |
-          {% raw %}echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"{% endraw %}
+          echo "[ CONDITION LOG ]: ${{ env.DATE_SCHEDULE }} - ${{ env.FULL_CURRENT_DATE }} - ${{ env.TRAINING_SCHEDULE }}"
           git config --local user.email "belajarqywok@gmail.com"
           git config --local user.name "belajarqywok"
           git add -A
