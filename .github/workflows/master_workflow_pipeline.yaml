@@ -27,11 +27,6 @@ jobs:
           persist-credentials: false
           fetch-depth: 1
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-
       - name: Check Disk System
         id: check_disk_system
         run: df -h
@@ -56,6 +51,12 @@ jobs:
             >> $GITHUB_ENV
           echo "TRAINING_SCHEDULE=$(cat schedules/training.schedule)" \
             >> $GITHUB_ENV
+
+      - name: Setup Python
+        if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
 
       - name: Cache pip
         if: env.DATE_SCHEDULE != env.FULL_CURRENT_DATE && env.TRAINING_SCHEDULE == 'TRAIN_ON'

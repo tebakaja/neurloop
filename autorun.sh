@@ -19,7 +19,8 @@ echo "---------------------------------------------------------------" | tee -a 
 echo "-------------------- [ Autogen Workflows ] --------------------" | tee -a "$LOGFILE"
 echo "---------------------------------------------------------------" | tee -a "$LOGFILE"
 python autogen_workflows.py
-ls -al .github/Workflows | tee -a "$LOGFILE"
+ls -al .github/workflows | tee -a "$LOGFILE"
+rm .github/workflows/workflow_*_pipeline.yaml | tee -a "$LOGFILE"
 
 echo "-------------------------------------------------------" | tee -a "$LOGFILE"
 echo "-------------------- [ Workloads ] --------------------" | tee -a "$LOGFILE"
